@@ -1,69 +1,84 @@
 package Qn7;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
-import java.util.concurrent.*;
+
 
 public class Qn7a {
-    private static final int NUM_THREADS = 4; // number of threads to use
+    private static final int NUM_THREADS = 4;
 
     public static void main(String[] args) {
-        int n = 3; // size of matrices
-        Random random = new Random();
+        int n = 10;
 
-        // create matrices A and B with random values
-        int[][] A = new int[n][n];
-        int[][] B = new int[n][n];
+        int[][] a = new int[n][n];
+        int[][] b = new int[n][n];
+
+        Random rand = new Random();
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                A[i][j] = random.nextInt();
-                B[i][j] = random.nextInt();
+                a[i][j] = rand.nextInt(10);
+                b[i][j] = rand.nextInt(10);
             }
         }
 
-        // create a thread pool with NUM_THREADS threads
-        ExecutorService pool = Executors.newFixedThreadPool(NUM_THREADS);
+        int[][] c = new int[n][n];
 
-        // create an array of Future objects to hold the results of each thread
-        Future<Double>[][] futures = new Future[n][n];
+        int blockSize = n / NUM_THREADS;
+        List<MultiplierThread> threads = new ArrayList<>();
+        for (int i = 0; i < NUM_THREADS; i++) {
+            int startRow = i * blockSize;
+            int endRow = (i == NUM_THREADS - 1) ? n : startRow + blockSize;
+            threads.add(new MultiplierThread(a, b, c, startRow, endRow));
+        }
 
-        // multiply the matrices using threads
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                final int row = i;
-                final int col = j;
-                futures[i][j] = pool.submit(() -> {
-                    double sum = 0;
-                    for (int k = 0; k < n; k++) {
-                        sum += A[row][k] * B[k][col];
-                    }
-                    return sum;
-                });
+        for (MultiplierThread t : threads) {
+            t.start();
+        }
+
+        for (MultiplierThread t : threads) {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
 
-        // wait for all threads to finish and get the results
-        double[][] C = new double[n][n];
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                try {
-                    C[i][j] = futures[i][j].get();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
-
-        // shutdown the thread pool
-        pool.shutdown();
-
-        // print the result
-        System.out.println("Result:");
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                System.out.print(C[i][j] + " ");
+                System.out.print(c[i][j] + " ");
             }
             System.out.println();
         }
     }
+
+    private static class MultiplierThread extends Thread {
+        private int[][] a;
+        private int[][] b;
+        private int[][] c;
+        private int startRow;
+        private int endRow;
+
+        public MultiplierThread(int[][] a, int[][] b, int[][] c, int startRow, int endRow) {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+            this.startRow = startRow;
+            this.endRow = endRow;
+        }
+
+        @Override
+        public void run() {
+            int n = a.length;
+            for (int i = startRow; i < endRow; i++) {
+                for (int j = 0; j < n; j++) {
+                    for (int k = 0; k < n; k++) {
+                        c[i][j] += a[i][k] * b[k][j];
+                    }
+                }
+            }
+        }
+    }
 }
+

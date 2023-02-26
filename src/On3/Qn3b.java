@@ -1,28 +1,32 @@
 package On3;
 
 public class Qn3b {
-    public static boolean match(String a, String pattern) {
-        int i = 0, j = 0;
-        while (i < a.length() && j < pattern.length()) {
-            if (pattern.charAt(j) == '@') {
-                return i == a.length() - 1 && j == pattern.length() - 1;
-            } else if (pattern.charAt(j) == '#') {
-                i++;
-                j++;
-            } else if (a.charAt(i) == pattern.charAt(j)) {
-                i++;
-                j++;
+    public static boolean isMatch(String str, String pattern) {
+        int strIndex = 0, patternIndex = 0;
+        int strLen = str.length(), patternLen = pattern.length();
+        while (strIndex < strLen && patternIndex < patternLen) {
+            if (pattern.charAt(patternIndex) == '@') {
+                return true;
+            } else if (pattern.charAt(patternIndex) == '#') {
+                patternIndex++;
+                strIndex++;
+            } else if (str.charAt(strIndex) == pattern.charAt(patternIndex)) {
+                strIndex++;
+                patternIndex++;
             } else {
                 return false;
             }
         }
-        return i == a.length() && j == pattern.length();
+        return strIndex == strLen && patternIndex == patternLen;
     }
 
     public static void main(String[] args) {
-        System.out.println(match("tt", "@")); // true
-        System.out.println(match("ta", "t")); // false
-        System.out.println(match("ta", "t#")); // true
+        String a1 = "tt", pattern1 = "@";
+        String a2 = "ta", pattern2 = "t";
+        String a3 = "ta", pattern3 = "t#";
+        System.out.println(isMatch(a1, pattern1));
+        System.out.println(isMatch(a2, pattern2));
+        System.out.println(isMatch(a3, pattern3));
     }
 }
 

@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+
+// Multithreaded Web Crawler
 public class Qn7b {
     // Set up the initial queue with the starting URLs
     private static BlockingQueue<String> queue = new LinkedBlockingQueue<>();
